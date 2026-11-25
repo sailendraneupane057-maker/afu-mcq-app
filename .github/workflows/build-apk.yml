@@ -1,0 +1,40 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Build release APK
+        run: gradle assembleRelease --no-daemon
+      - name: Rename APK
+        run: cp app/build/outputs/apk/release/app-release.apk AFU-Forestry-MCQ.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AFU-Forestry-MCQ-apk
+          path: AFU-Forestry-MCQ.apk
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: AFU Forestry MCQ v1.0 (build ${{ github.run_number }})
+          make_latest: 'true'
+          body: |
+            Offline AFU M.Sc. Forestry entrance MCQ trainer – 1,197 MCQs, Study / Practice / Model mock tests.
+            Download **AFU-Forestry-MCQ.apk** below on your Android phone and install it (allow "install unknown apps" when asked).
+          files: AFU-Forestry-MCQ.apk
